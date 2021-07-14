@@ -9,17 +9,27 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
 import com.example.needforspeed.databinding.ActivityMainBinding
+import com.tql.models.bookItNow.LeaderBoard
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     var running = false
     var sensorManager: SensorManager? = null
     private lateinit var binding: ActivityMainBinding
+    private var adapter: LeaderBoardAdapter? = null
+    private var leaderBoardList = ArrayList<LeaderBoard>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +46,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
             Calendar.HOUR_OF_DAY, Calendar.MINUTE + 1, 0);
         setAlarm(calendar.timeInMillis)
+
+
+        leaderBoardList = ArrayList()
+        val l1 = LeaderBoard().apply {
+            name = "joe"
+            stepCount = "2000"
+        }
+        val l2 = LeaderBoard().apply {
+            name = "Scott"
+            stepCount = "2400"
+        }
+        val l3 = LeaderBoard().apply {
+            name = "Sandeep"
+            stepCount = "1600"
+        }
+        leaderBoardList.add(l1)
+        leaderBoardList.add(l2)
+        leaderBoardList.add(l3)
+        adapter = LeaderBoardAdapter(leaderBoardList)
+        binding.rv.adapter = adapter
+        adapter!!.notifyDataSetChanged()
     }
 
     override fun onResume() {
@@ -87,6 +118,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
+    }
+
+    internal inner class LeaderBoardAdapter(private val leaderBoardList: ArrayList<LeaderBoard>) : RecyclerView.Adapter<LeaderBoardAdapter.ViewHolder>() {
+
+        override fun onCreateViewHolder(parent: ViewGroup,
+                                        viewType: Int): ViewHolder {
+
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.single_item_leader_board, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+            viewHolder.name.text = leaderBoardList[position].name
+            viewHolder.stepCount.text = leaderBoardList[position].stepCount
+        }
+
+        override fun getItemCount(): Int {
+            return leaderBoardList.size
+        }
+        inner class ViewHolder(rowView: View) : RecyclerView.ViewHolder(rowView) {
+            var image: ImageView = rowView.findViewById<View>(R.id.image) as ImageView
+            var name: TextView = rowView.findViewById<View>(R.id.tv_name) as TextView
+            var stepCount: TextView = rowView.findViewById<View>(R.id.tv_stepsCount) as TextView
+        }
     }
 
 }
